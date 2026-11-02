@@ -9,10 +9,10 @@ import aiohttp
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_LOCATION
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .const import DOMAIN, GEOCODING_URL
+from .const import CONF_SCREENSHOTONE_ACCESS_KEY, DOMAIN, GEOCODING_URL
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -71,4 +71,35 @@ class MeteoPlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user",
             data_schema=vol.Schema({vol.Required(CONF_LOCATION): str}),
             errors=errors,
+        )
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: config_entries.ConfigEntry):
+        """Allow configuring the external screenshot service after setup."""
+        return MeteoPlOptionsFlow(config_entry)
+
+
+class MeteoPlOptionsFlow(config_entries.OptionsFlow):
+    """Configure ScreenshotOne for the official meteo.pl page image."""
+
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+        self.config_entry = config_entry
+
+    async def async_step_init(self, user_input: dict[str, Any] | None = None):
+        if user_input is not None:
+            return self.async_create_entry(title="", data=user_input)
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_SCREENSHOTONE_ACCESS_KEY,
+                        default=self.config_entry.options.get(
+                            CONF_SCREENSHOTONE_ACCESS_KEY, ""
+                        ),
+                    ): str
+                }
+            ),
         )

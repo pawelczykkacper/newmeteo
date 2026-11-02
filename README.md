@@ -8,7 +8,7 @@ Dodaj repozytorium `pawelczykkacper/newmeteo` do HACS jako integrację niestanda
 
 Możesz też skopiować katalog `custom_components/meteo_pl` do katalogu `custom_components` w Home Assistant. Po instalacji wybierz **Ustawienia → Urządzenia i usługi → Dodaj integrację → Meteo.pl Meteogram**.
 
-Obraz jest dostępny w `/local/meteo_pl_<id wpisu>.png` i aktualizuje się wraz z odświeżeniem danych co godzinę. Można go użyć w encji lub w karcie obrazu:
+Obraz jest dostępny w `/local/meteo_pl_<id wpisu>.png` i aktualizuje się co 6 godzin. Można go użyć w encji lub w karcie obrazu:
 
 ```yaml
 type: picture-entity
@@ -16,6 +16,12 @@ entity: sensor.warszawa_meteogram
 show_name: true
 show_state: true
 ```
+
+## Zrzut strony meteo.pl
+
+Aby `entity_picture` pokazywał stronę w oryginalnej kolorystyce, otwórz konfigurację integracji, wybierz **Opcje** i podaj klucz API [ScreenshotOne](https://screenshotone.com/). Integracja wysyła tej usłudze adres `app.meteo.pl/meteogram/<szerokość>,<długość>` i zapisuje otrzymany PNG lokalnie w Home Assistant. Bez klucza nadal działa lokalne rysowanie wykresu.
+
+ScreenshotOne jest usługą zewnętrzną: otrzymuje współrzędne lokalizacji i pobiera stronę meteo.pl. Założenie konta i ewentualne limity lub opłaty zależą od aktualnej oferty dostawcy.
 
 Integracja korzysta z geokodera oraz API używanego przez aplikację [app.meteo.pl](https://app.meteo.pl), dla modelu UM4. Wartości pobiera dla najbliższego węzła siatki modelu; dokładność lokalizacji prognozy jest więc ograniczona rozdzielczością siatki.
 

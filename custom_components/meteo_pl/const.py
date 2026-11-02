@@ -8,6 +8,8 @@ CONF_LONGITUDE = "longitude"
 API_BASE = "https://devmgramapi.meteo.pl"
 GEOCODING_URL = "https://photon.dev.meteo.pl/api/"
 MODEL = "um4_60"
-UPDATE_INTERVAL = timedelta(hours=1)
+UPDATE_INTERVAL = timedelta(hours=6)
+CONF_SCREENSHOTONE_ACCESS_KEY = "screenshotone_access_key"
+SCREENSHOTONE_URL = "https://api.screenshotone.com/take"
 
 PLATFORMS = ["sensor"]

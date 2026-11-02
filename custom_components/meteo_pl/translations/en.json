@@ -16,5 +16,16 @@
     "abort": {
       "already_configured": "This location is already configured."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Meteo.pl screenshot",
+        "description": "Enter a ScreenshotOne API key to use a screenshot of the official meteo.pl page instead of a locally rendered chart. The service receives the page URL with the saved coordinates.",
+        "data": {
+          "screenshotone_access_key": "ScreenshotOne API key"
+        }
+      }
+    }
   }
 }

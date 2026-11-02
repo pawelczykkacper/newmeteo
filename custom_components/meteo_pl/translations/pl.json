@@ -16,5 +16,16 @@
     "abort": {
       "already_configured": "Ta lokalizacja jest już skonfigurowana."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Zrzut meteogramu z meteo.pl",
+        "description": "Podaj klucz API ScreenshotOne, aby używać zrzutu strony meteo.pl zamiast wykresu generowanego lokalnie. Usługa otrzyma adres strony z zapisanymi współrzędnymi.",
+        "data": {
+          "screenshotone_access_key": "Klucz API ScreenshotOne"
+        }
+      }
+    }
   }
 }

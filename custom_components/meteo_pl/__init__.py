@@ -11,14 +11,22 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import API_BASE, DOMAIN, MODEL, PLATFORMS, UPDATE_INTERVAL
+from .const import (
+    API_BASE,
+    CONF_SCREENSHOTONE_ACCESS_KEY,
+    DOMAIN,
+    MODEL,
+    PLATFORMS,
+    SCREENSHOTONE_URL,
+    UPDATE_INTERVAL,
+)
 from .image import render_meteogram
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class MeteoPlCoordinator(DataUpdateCoordinator[dict]):
-    """Fetch the latest meteo.pl forecast and build its image."""
+    """Fetch the latest forecast and capture the official meteogram page."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         super().__init__(
@@ -58,9 +66,13 @@ class MeteoPlCoordinator(DataUpdateCoordinator[dict]):
                 response.raise_for_status()
                 forecast = await response.json()
 
-            image = await self.hass.async_add_executor_job(
-                render_meteogram, forecast, self.entry.title
-            )
+            access_key = self.entry.options.get(CONF_SCREENSHOTONE_ACCESS_KEY)
+            if access_key:
+                image = await self._async_capture_official_page(access_key)
+            else:
+                image = await self.hass.async_add_executor_job(
+                    render_meteogram, forecast, self.entry.title
+                )
             image_path = self.hass.config.path(
                 "www", f"meteo_pl_{self.entry.entry_id}.png"
             )
@@ -77,6 +89,41 @@ class MeteoPlCoordinator(DataUpdateCoordinator[dict]):
             raise
         except (ClientError, TimeoutError, ValueError, KeyError) as err:
             raise UpdateFailed(f"Błąd pobierania meteogramu z meteo.pl: {err}") from err
+
+    async def _async_capture_official_page(self, access_key: str) -> bytes:
+        """Capture the JavaScript-rendered official page using ScreenshotOne."""
+        import aiohttp
+
+        latitude = self.entry.data["latitude"]
+        longitude = self.entry.data["longitude"]
+        page_url = f"https://app.meteo.pl/meteogram/{latitude},{longitude}"
+        payload = {
+            "access_key": access_key,
+            "url": page_url,
+            "format": "png",
+            "viewport_width": 1440,
+            "viewport_height": 1000,
+            "device_scale_factor": 1,
+            "delay": 8,
+            "timeout": 40,
+            "scripts": (
+                "document.querySelectorAll('[role=dialog],dialog,[aria-modal=true]')"
+                ".forEach(el=>el.remove());"
+                "for(const el of document.querySelectorAll('button,[role=button]')){"
+                "const t=(el.innerText||el.getAttribute('aria-label')||'').trim().toLowerCase();"
+                "if(['zamknij','close','gotowe','×'].includes(t))el.click();}"
+            ),
+        }
+        timeout = aiohttp.ClientTimeout(total=60)
+        async with self.session.post(
+            SCREENSHOTONE_URL, json=payload, timeout=timeout
+        ) as response:
+            response.raise_for_status()
+            content_type = response.headers.get("Content-Type", "")
+            if not content_type.startswith("image/"):
+                detail = (await response.text())[:300]
+                raise ValueError(f"ScreenshotOne nie zwrócił obrazu: {detail}")
+            return await response.read()
 
 
 def _first_value(data: dict, field: str) -> float | None:
