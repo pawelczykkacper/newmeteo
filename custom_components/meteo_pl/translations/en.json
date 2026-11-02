@@ -1,0 +1,20 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Meteo.pl Meteogram",
+        "description": "Enter a place name. The integration will use the nearest UM4 model grid point.",
+        "data": {
+          "location": "Location"
+        }
+      }
+    },
+    "error": {
+      "location_not_found": "This location could not be found.",
+      "cannot_connect": "Could not connect to meteo.pl."
+    },
+    "abort": {
+      "already_configured": "This location is already configured."
+    }
+  }
+}

@@ -1,10 +1,12 @@
 {
   "domain": "meteo_pl",
   "name": "Meteo.pl Meteogram",
-  "codeowners": [],
+  "codeowners": ["@pawelczykkacper"],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://www.meteo.pl/meteogramy",
+  "documentation": "https://github.com/pawelczykkacper/newmeteo",
+  "issue_tracker": "https://github.com/pawelczykkacper/newmeteo/issues",
   "iot_class": "cloud_polling",
-  "requirements": ["Pillow>=10.0.0"]
+  "requirements": ["Pillow>=10.0.0"],
+  "version": "0.1.1"
 }
