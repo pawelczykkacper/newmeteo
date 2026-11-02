@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from io import BytesIO
+import unicodedata
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -33,21 +34,24 @@ def render_meteogram(forecast: dict, location: str) -> bytes:
 
     image = Image.new("RGB", (WIDTH, HEIGHT), "#101820")
     draw = ImageDraw.Draw(image)
-    font = ImageFont.truetype("DejaVuSans.ttf", 19)
-    small = ImageFont.truetype("DejaVuSans.ttf", 15)
+    try:
+        font = ImageFont.load_default(size=19)
+        small = ImageFont.load_default(size=15)
+    except TypeError:  # Pillow < 10.1 does not accept a size here.
+        font = small = ImageFont.load_default()
     white = "#f2f6fa"
     muted = "#9baab6"
 
-    draw.text((LEFT, 28), f"Meteogram UM4 · {location}", fill=white, font=font)
+    _draw_text(draw, (LEFT, 28), f"Meteogram UM4 - {location}", fill=white, font=font)
     start = times[0].strftime("%d.%m %H:%M UTC")
     end = times[-1].strftime("%d.%m %H:%M UTC")
-    draw.text((LEFT, 54), f"{start}  —  {end}  ·  Źródło: meteo.pl / ICM UW", fill=muted, font=small)
+    _draw_text(draw, (LEFT, 54), f"{start} -- {end} - Zrodlo: meteo.pl / ICM UW", fill=muted, font=small)
 
     gap = 12
     panel_height = (HEIGHT - TOP - BOTTOM - gap * 3) // 4
     panels = [
-        ("Temperatura (°C)", TOP, panel_height),
-        ("Opad (mm/h) i prawdopodobieństwo (%)", TOP + panel_height + gap, panel_height),
+        ("Temperatura (C)", TOP, panel_height),
+        ("Opad (mm/h) i prawdopodobienstwo (%)", TOP + panel_height + gap, panel_height),
         ("Zachmurzenie (%)", TOP + (panel_height + gap) * 2, panel_height),
         ("Wiatr (m/s)", TOP + (panel_height + gap) * 3, panel_height),
     ]
@@ -55,7 +59,7 @@ def render_meteogram(forecast: dict, location: str) -> bytes:
         draw.rounded_rectangle(
             (LEFT, top, WIDTH - RIGHT, top + height), radius=10, fill="#17232d"
         )
-        draw.text((LEFT + 14, top + 9), label, fill=muted, font=small)
+        _draw_text(draw, (LEFT + 14, top + 9), label, fill=muted, font=small)
 
     plot_left = LEFT + 58
     plot_right = WIDTH - RIGHT - 14
@@ -141,8 +145,8 @@ def _draw_grid(draw, left, right, top, bottom, low, high, font):
     for step in range(3):
         y = top + (bottom - top) * step / 2
         draw.line((left, y, right, y), fill="#2c3a45", width=1)
-    draw.text((LEFT + 8, top), f"{high:g}", fill="#9baab6", font=font)
-    draw.text((LEFT + 8, bottom - 10), f"{low:g}", fill="#9baab6", font=font)
+    _draw_text(draw, (LEFT + 8, top), f"{high:g}", fill="#9baab6", font=font)
+    _draw_text(draw, (LEFT + 8, bottom - 10), f"{low:g}", fill="#9baab6", font=font)
 
 
 def _xy(index, count, left, top, width, height, value, low, high):
@@ -189,4 +193,11 @@ def _draw_time_labels(draw, left, right, y, times, font):
         return
     for index in range(0, len(times), max(1, len(times) // 8)):
         x = left + (right - left) * index / max(1, len(times) - 1)
-        draw.text((int(x), y), times[index].strftime("%d.%m %H:%M"), fill="#9baab6", font=font)
+        _draw_text(draw, (int(x), y), times[index].strftime("%d.%m %H:%M"), fill="#9baab6", font=font)
+
+
+def _draw_text(draw, position, text, *, fill, font):
+    """Draw text using Pillow's bundled font without OS font dependencies."""
+    normalized = text.replace("Ł", "L").replace("ł", "l")
+    ascii_text = unicodedata.normalize("NFKD", normalized).encode("ascii", "ignore").decode()
+    draw.text(position, ascii_text, fill=fill, font=font)
