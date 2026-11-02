@@ -1,0 +1,20 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Meteogram z meteo.pl",
+        "description": "Podaj nazwę miejscowości. Integracja wybierze najbliższy punkt modelu UM4.",
+        "data": {
+          "location": "Miejscowość"
+        }
+      }
+    },
+    "error": {
+      "location_not_found": "Nie znaleziono tej miejscowości.",
+      "cannot_connect": "Nie udało się połączyć z usługą meteo.pl."
+    },
+    "abort": {
+      "already_configured": "Ta lokalizacja jest już skonfigurowana."
+    }
+  }
+}

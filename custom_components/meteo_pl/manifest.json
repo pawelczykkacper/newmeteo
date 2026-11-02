@@ -1,0 +1,10 @@
+{
+  "domain": "meteo_pl",
+  "name": "Meteo.pl Meteogram",
+  "codeowners": [],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://www.meteo.pl/meteogramy",
+  "iot_class": "cloud_polling",
+  "requirements": ["Pillow>=10.0.0"]
+}
