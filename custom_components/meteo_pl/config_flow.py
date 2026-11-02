@@ -22,7 +22,7 @@ async def _find_location(hass: HomeAssistant, query: str) -> dict[str, Any]:
     session = async_get_clientsession(hass)
     async with session.get(
         GEOCODING_URL,
-        params={"q": query, "limit": 1, "osm_tag": "place", "lang": "pl"},
+        params={"q": query, "limit": 1, "osm_tag": "place"},
         timeout=aiohttp.ClientTimeout(total=15),
     ) as response:
         response.raise_for_status()
